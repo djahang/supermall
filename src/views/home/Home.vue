@@ -37,9 +37,9 @@ import Scroll from "components/common/scroll/Scroll";
 import TabControl from "components/content/tabControl/TabControl";
 import GoodsList from "components/content/goods/GoodsList";
 import BackTop from "components/content/backTop/BackTop";
+import {itemListenerMixin,backTopMixin} from "common/mixin";
 //网路请求函数
 import {getHomeMultidata,getHomeGoods} from 'network/home'
-import {debounce} from 'common/utils'
 
   export default {
     name: "Home",
@@ -51,8 +51,11 @@ import {debounce} from 'common/utils'
       TabControl,
       GoodsList,
       Scroll,
-      BackTop
     },
+    mixins:[
+      itemListenerMixin,
+      backTopMixin
+    ],
     data(){
       return {
         banner:[],
@@ -63,10 +66,9 @@ import {debounce} from 'common/utils'
           'sell':{page:0,list:[]},
         },
         currentType:'pop',
-        isBackTopShow:false,
         tabOffsetTop :0,
         isTabFiexd:false,
-        saveY:0
+        saveY:0,
       }
     },
     created(){    //函数调用结束，会释放所有变量，所以必须将数据保存到data种
@@ -84,20 +86,11 @@ import {debounce} from 'common/utils'
       //   this.$refs.scroll.scroll.refresh()
       // })
 
-      //1,图片加载完成的事件监听，将函数本身传入防抖动, 再执行事件总线代码
-      const refresh = debounce(this.$refs.scroll.refresh,30)
-      this.$bus.$on('itemimgload',()=>{
-        refresh()     //执行防抖动
-      })
-
       //2,获取tabControl组件的offsetTop
       // 所有组件都有一个元素$el,用于获取组件元素
       // console.log(this.$refs.tabControl);
       // console.log(this.$refs.tabControl.$el);
       // console.log(this.tabOffsetTop = this.$refs.tabControl.$el.offsetTop);
-    },
-    destroyed() {
-      console.log('home destroyed');
     },
     computed:{
       showGoods(){
@@ -111,9 +104,12 @@ import {debounce} from 'common/utils'
       this.$refs.scroll.refresh()   //重新计算scroll
     },
     deactivated() {
-      //获取离开时候 scroll 的Y坐标
+      //1,获取离开时候 scroll 的Y坐标
       this.saveY = this.$refs.scroll.getScrollY()
       // console.log(this.saveY);
+
+      //2,在离开页面的时候，取消全局事件的监听
+      this.$bus.$off('itemimgload',this.itemImgListener)
     },
     methods:{
       /**
@@ -134,16 +130,9 @@ import {debounce} from 'common/utils'
         this.$refs.tabControl1.currentIndex = index
         this.$refs.tabControl2.currentIndex = index
       },
-      bactopClick(){
-        //获取scroll对象,再调用scroll对象的scrollTo方法
-        // this.$refs.scroll.scrollTo(0,0,500)
-
-        //在子组件内,封装了scrollTo方法,直接调用方法,不用获取对象,默认time为300毫秒
-        this.$refs.scroll.scrollTo(0,0)
-      },
       contentScroll(position){
         //1, 判断BackTop是否显示
-        this.isBackTopShow = (-position.y) > 1000
+        this.listenShouBackTop(position)
 
         //2,判断tabControl是否吸顶（position:fiexd）
         this.isTabFiexd = (-position.y) > this.tabOffsetTop

@@ -9,6 +9,12 @@ export function getDetail(iid){
   })
 }
 
+export function getRecommend(){
+  return request({
+    url:'recommend'
+  })
+}
+
 //定义构造函数，将网络请求的数据，通过构造函数，放在一个对象中
 export class Goods {
   constructor(itemInfo, columns, services) {
@@ -22,7 +28,6 @@ export class Goods {
     this.realPrice = itemInfo.lowNowPrice
   }
 }
-
 
 export class Shop {
   constructor(shopInfo) {

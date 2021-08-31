@@ -1,6 +1,6 @@
 <template>
 <div class="goods-item"  @click="itemclick">
-  <img :src="goodsItem.show.img" alt="" @load="imgload">
+  <img :src="showImage" alt="" @load="imgload">
   <div class="goods-info">
     <p>{{goodsItem.title}}</p>
     <span class="price">{{goodsItem.price}}</span>
@@ -12,6 +12,11 @@
 <script>
 export default {
   name: "GoodsListItem",
+  data(){
+    return {
+      iid: this.goodsItem.iid
+    }
+  },
   props:{
     goodsItem:{
       type:Object,
@@ -20,23 +25,28 @@ export default {
       }
     }
   },
+  computed: {
+    showImage() {
+      // 因为 || 是懒运算  如果左边为true就不管右边了  但是换位置 左边的因为没有show就会报错
+      return  this.goodsItem.image || this.goodsItem.show.img
+      // 再点击事件中加给判断，if( this.$route.path.indexOf(detail) !==-1){}
+      //   这样才进行路由跳转，else { return false}
+    }
+  },
   methods:{
     //监听图片加载事件，来重新计算content高度
     imgload(){
-      // console.log('hello word');
       this.$bus.$emit('itemimgload')
     },
     itemclick(){
-
       //this.$router.push('/detail/'+this.goodsItem.iid).catch(()=>{})
-      //
-      this.$router.push({
-        path:'/detail',
-        query:{
-          iid:this.goodsItem.iid
-        }
-      }).catch(()=>{})
-
+      // this.$router.go(0)
+        this.$router.push({
+          path:'/detail',
+          query:{
+            iid:this.goodsItem.iid
+          }
+        })
     }
   }
 }

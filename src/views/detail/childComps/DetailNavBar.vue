@@ -31,7 +31,8 @@ export default {
   },
   methods:{
     itemClick(index){
-      console.log(index);
+      this.currentIndex = index
+      this.$emit('titleClick',index)
     },
     detailBack(){
       // this.$router.push('/home').catch(()=>{})
